@@ -106,6 +106,7 @@ module Undress
     end
 
     def process!(node) #:nodoc:
+      return if node.nil?
       pre_processing_rules.each do |selector, handler|
         node.search(selector).each { |node| send handler, node }
       end
@@ -138,7 +139,7 @@ module Undress
     # Helper to determine if a node contents a whole word
     # useful to convert for example a letter italic inside a word
     def complete_word?(node)
-      p, n = node.previous_node, node.next_node
+      p, n = node.previous, node.next
 
       return true if !p && !n 
 
@@ -157,6 +158,7 @@ module Undress
     end
 
     def method_missing(tag, node, *args) #:nodoc:
+      return if node.nil?
       process(node.children)
     end
   end

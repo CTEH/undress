@@ -24,8 +24,8 @@ module Undress
 
     # inline elements
     rule_for(:a) {|e|
-      title = e.has_attribute?("title") ? " (#{e["title"]})" : ""
-      "[#{content_of(e)}#{title}:#{e["href"]}]"
+      title = (e.has_attribute?("title") && e["title"] != "") ? " (#{e["title"]})" : ""
+      "\"#{content_of(e)}#{title}\":#{e["href"]} "
     }
     rule_for(:img) {|e|
       alt = e.has_attribute?("alt") ? "(#{e["alt"]})" : ""

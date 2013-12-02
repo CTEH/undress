@@ -38,11 +38,14 @@ module Undress
     # We try to fix those elements which aren't write as xhtml standard but more
     # important we can't parse it ok without correct it before.
     def xhtmlize!
-      (@doc/"ul|ol").each   {|list| fixup_list(list) if list.parent != "li" && list.parent.name !~ /ul|ol/}
-      (@doc/"p|span").each  {|e| fixup_span_with_styles(e)}
-      (@doc/"strike").each  {|e| e.change_tag! "del"}
-      (@doc/"u").each       {|e| e.change_tag! "ins"}
-      (@doc/"td|th").each   {|e| fixup_cells(e)}
+      (@doc/"ul").each   {|list| fixup_list(list) if list.parent != "li" && list.parent && list.parent.node_name !~ /ul/}
+      (@doc/"ol").each   {|list| fixup_list(list) if list.parent != "li" && list.parent && list.parent.node_name !~ /ol/}
+      (@doc/"p").each  {|e| fixup_span_with_styles(e)}
+      (@doc/"span").each  {|e| fixup_span_with_styles(e)}
+      (@doc/"strike").each  {|e| e.node_name = "del"}
+      (@doc/"u").each       {|e| e.node_name = "ins"}
+      (@doc/"td").each   {|e| fixup_cells(e)}
+      (@doc/"th").each   {|e| fixup_cells(e)}
     end
 
     # Delete tabs, newlines and more than 2 spaces from inside elements
@@ -53,7 +56,7 @@ module Undress
           e.inner_html = e.inner_html.gsub(/\n|\t/,"").gsub(/\s+/," ")
         elsif e.text? && e.parent.name !~ /pre|code/
           e.content = e.content.gsub(/\n|\t/,"").gsub(/\s+/," ")
-          e.content = e.content.gsub(/^\s+$/, "") if e.next_node && ! INLINE_ELEMENTS.include?(e.next_node.name)
+          e.content = e.content.gsub(/^\s+$/, "") if e.next && ! INLINE_ELEMENTS.include?(e.next.name)
         end
       end
     end
@@ -97,7 +100,8 @@ module Undress
 
         if li_side
           li_side.inner_html = "#{li_side.inner_html}#{list.to_html}"
-          list.parent.replace_child(list, "")
+          #list.parent.replace_child(list, "")
+          list.remove
         end
       end
     end
@@ -107,8 +111,8 @@ module Undress
     # strip spaces
     def fixup_cells(e)
       e.search("br").remove
-      e.next_node.content = "" if e.next_node && e.next_node.text?
-      e.previous_node.content = "" if e.previous_node && e.previous_node.text?
+      e.next.content = "" if e.next && e.next.text?
+      e.previous.content = "" if e.previous && e.previous.text?
       content = e.inner_html.gsub(/\&nbsp\;/,"\s").strip
       e.inner_html = content == "" ? [] : content
     end
