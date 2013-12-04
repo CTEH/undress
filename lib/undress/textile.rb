@@ -50,7 +50,7 @@ module Undress
     rule_for(:br)         {|e| "\n" }
     rule_for(:blockquote) {|e| "\n\nbq#{attributes(e)}. #{content_of(e)}\n\n" }
     rule_for(:pre)        {|e|
-      if e.children && e.children.all? {|n| n.text? && n.content =~ /^\s+$/ || n.elem? && n.name == "code" }
+      if e.children && e.children.all? {|n| n.text? && n.content =~ /\A\s+\z/ || n.elem? && n.name == "code" }
         "\n\npc#{attributes(e)}. #{content_of(e % "code")}\n\n"
       else
         "<pre>#{content_of(e)}</pre>"
